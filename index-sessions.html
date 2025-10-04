@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catalogueur Vidéo avec Sessions</title>
+    <style>
+        /* Assure que la zone modale n'est jamais 'draggable' et laisse le clavier fonctionner */
+        .modal, .modal * { -webkit-app-region: no-drag !important; }
+        input, textarea { user-select: text; pointer-events: auto; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+        
+        .header p {
+            opacity: 0.8;
+            font-size: 1.1em;
+        }
+        
+        .session-bar {
+            background: #f8f9fa;
+            padding: 15px 30px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .session-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .session-status {
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        .session-loaded {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            box-shadow: 0 2px 8px rgba(21, 87, 36, 0.1);
+        }
+
+        .last-session-info {
+            font-size: 12px;
+            color: #6c757d;
+            font-style: italic;
+            opacity: 0.8;
+        }
+
+        .last-session-info small {
+            color: inherit;
+            font-weight: normal;
+        }
+        }
+
+        .session-none {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            color: #856404;
+            border: 1px solid #ffeaa7;
+            box-shadow: 0 2px 8px rgba(133, 100, 4, 0.1);
+        }
+        
+        .session-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .controls {
+            padding: 24px 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .progress-summary {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            margin-top: 10px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+            font-family: inherit;
+        }
+
+        /* Effet de brillance subtil au survol */
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        /* ==============================================
+           DESIGN SYSTEM - Video Catalog Harmonious Theme
+           ==============================================
+           Palette basée sur le gradient existant #667eea → #764ba2
+           Logique fonctionnelle :
+           - PRIMARY (bleu-violet) : Actions principales (scan, navigation)
+           - SECONDARY (bleu-gris) : Actions de support (fermer, charger)
+           - SUCCESS (vert-turquoise) : Sauvegardes, exports, confirmations
+           - INFO (bleu-violet vif) : Informations, visualisation, listes
+           - WARNING (orange-corail) : Modifications, mises à jour
+           - DANGER (rouge-corail) : Actions destructives, suppressions
+           ============================================== */
+
+        /* PRIMAIRE - Actions principales (scan, navigation) */
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        /* SECONDAIRE - Actions de support, navigation */
+        .btn-secondary {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #243342 0%, #2c3e50 100%);
+            box-shadow: 0 8px 25px rgba(44, 62, 80, 0.3);
+        }
+
+        /* SUCCESS - Actions de sauvegarde, export, confirmation */
+        .btn-success {
+            background: linear-gradient(135deg, #00b894 0%, #00a085 100%);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .btn-success:hover {
+            background: linear-gradient(135deg, #00a085 0%, #009176 100%);
+            box-shadow: 0 8px 25px rgba(0, 184, 148, 0.3);
+        }
+
+        /* INFO - Actions d'information, visualisation */
+        .btn-info {
+            background: linear-gradient(135deg, #0984e3 0%, #6c5ce7 100%);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .btn-info:hover {
+            background: linear-gradient(135deg, #0770c4 0%, #5f4fcf 100%);
+            box-shadow: 0 8px 25px rgba(9, 132, 227, 0.3);
+        }
+
+        /* WARNING - Actions de modification, mise à jour */
+        .btn-warning {
+            background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .btn-warning:hover {
+            background: linear-gradient(135deg, #fcbf49 0%, #d63031 100%);
+            box-shadow: 0 8px 25px rgba(253, 203, 110, 0.3);
+        }
+
+        /* DANGER - Actions destructives, suppression */
+        .btn-danger {
+            background: linear-gradient(135deg, #e17055 0%, #d63031 100%);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #d63031 0%, #c0392b 100%);
+            box-shadow: 0 8px 25px rgba(225, 112, 85, 0.3);
+        }
+        
+        /* ==============================================
+           ÉTATS SPÉCIAUX DES BOUTONS
+           ============================================== */
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+            background: #95a5a6 !important;
+            filter: grayscale(0.7);
+        }
+
+        .btn:active {
+            transform: translateY(0px) !important;
+            box-shadow: inset 0 3px 10px rgba(0,0,0,0.2) !important;
+        }
+
+        .btn:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+        }
+
+        /* États focus spécifiques par type */
+        .btn-success:focus {
+            box-shadow: 0 0 0 3px rgba(0, 184, 148, 0.3);
+        }
+
+        .btn-danger:focus {
+            box-shadow: 0 0 0 3px rgba(225, 112, 85, 0.3);
+        }
+
+        .btn-warning:focus {
+            box-shadow: 0 0 0 3px rgba(253, 203, 110, 0.3);
+        }
+
+        .btn-info:focus {
+            box-shadow: 0 0 0 3px rgba(9, 132, 227, 0.3);
+        }
+
+        .btn-secondary:focus {
+            box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.3);
+        }
+
+        /* ==============================================
+           AMÉLIORATIONS ACCESSIBILITÉ & UX
+           ============================================== */
+
+        /* Transition douce pour tous les éléments interactifs */
+        .session-item, .stat-card, .modal-content, .sessions-panel {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Focus visible pour l'accessibilité clavier */
+        .session-item:focus-within {
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.3);
+            border-color: #667eea;
+        }
+
+        /* Amélioration des cards avec subtle glow */
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.1);
+        }
+
+        /* Animations plus fluides pour les modales */
+        .modal.show {
+            animation: modalFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Optimisation du contraste pour les textes sur gradients */
+        .btn {
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        .progress-container {
+            flex: 1 1 280px;
+            min-width: 260px;
+            margin: 0;
+            padding: 16px 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            display: none;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        .progress-text {
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .stats {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            margin: 0;
+        }
+        
+        .stat-card {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            border-radius: 999px;
+            background: rgba(102, 126, 234, 0.12);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            box-shadow: none;
+            text-align: left;
+        }
+        
+        .stat-number {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 0;
+        }
+        
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.75rem;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+        
+        .sessions-panel {
+            background: white;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            display: none;
+            position: relative;
+            width: 100%;
+            clear: both;
+        }
+        
+        .sessions-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .session-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+        
+        .session-item:hover {
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        .session-details h4 {
+            margin-bottom: 5px;
+            color: #2c3e50;
+        }
+        
+        .session-details small {
+            color: #6c757d;
+            display: block;
+            margin-bottom: 3px;
+        }
+        
+        .session-item-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+        
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            position: relative;
+            z-index: 10000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .modal h3 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        
+        .modal p {
+            margin-bottom: 20px;
+            line-height: 1.6;
+            color: #2c3e50; /* Amélioration de la lisibilité */
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .form-group input {
+            -webkit-app-region: no-drag; /* sécurité supplémentaire */
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            background: #fff;
+            position: relative;
+            z-index: 10001;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        /* Règles spécifiques pour l'input sessionNameInput pour garantir l'accessibilité */
+        #sessionNameInput {
+            position: relative !important;
+            z-index: 10002 !important;
+            pointer-events: auto !important;
+            user-select: text !important;
+            -webkit-user-select: text !important;
+            -moz-user-select: text !important;
+            -ms-user-select: text !important;
+            background: #fff !important;
+            cursor: text !important;
+        }
+
+        #sessionNameInput:focus {
+            outline: none !important;
+            border-color: #667eea !important;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2) !important;
+            z-index: 10003 !important;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-info {
+            background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+            box-shadow: 0 2px 8px rgba(12, 84, 96, 0.1);
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            box-shadow: 0 2px 8px rgba(21, 87, 36, 0.1);
+        }
+        
+        /* Styles pour le tableau des vidéos */
+        .videos-container th {
+            position: relative;
+            resize: none;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .videos-container th:hover {
+            background: #e9ecef !important;
+        }
+
+        /* Styles pour les barres de redimensionnement */
+        .resize-handle {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 5px;
+            background: transparent;
+            cursor: col-resize;
+            user-select: none;
+            z-index: 10;
+            transition: background-color 0.2s ease;
+        }
+
+        .resize-handle:hover {
+            background: rgba(222, 226, 230, 0.8) !important;
+        }
+        
+        .sort-indicator {
+            opacity: 0.5;
+            font-size: 12px;
+            transition: opacity 0.3s;
+        }
+        
+        th[data-sort="asc"] .sort-indicator {
+            opacity: 1;
+            content: '↑';
+        }
+        
+        th[data-sort="desc"] .sort-indicator {
+            opacity: 1;
+            content: '↓';
+        }
+        
+        /* Style pour l'affichage RTL des chemins */
+        td[dir="rtl"] {
+            unicode-bidi: plaintext;
+            direction: rtl;
+            text-align: left;
+        }
+        
+        /* Style pour les barres de redimensionnement */
+        .resize-handle:hover {
+            background: #dee2e6 !important;
+        }
+
+        /* Version discrète en bas à droite */
+        .version-info {
+            position: fixed;
+            bottom: 10px;
+            right: 15px;
+            font-size: 11px;
+            color: #2c3e50;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 3px 6px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            font-weight: 500;
+            user-select: none;
+            pointer-events: none;
+            z-index: 1000;
+            border: 1px solid rgba(108, 117, 125, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📹 Catalogueur Vidéo</h1>
+            <p>Gestion intelligente avec sessions sauvegardées</p>
+        </div>
+        
+        <div class="session-bar">
+            <!-- Contrôles principaux repositionnés -->
+            <div class="main-controls-grid">
+                <!-- Groupe 1: Actions Principales -->
+                <div class="control-group primary-actions">
+                    <div class="group-header">🎯 Actions Principales</div>
+                    <div class="control-buttons">
+                        <button class="btn btn-primary btn-uniform" onclick="confirmNewScan()" id="newScanBtn">
+                            📁 Nouveau Scan
+                        </button>
+                        <button class="btn btn-primary btn-uniform" onclick="loadLastSession()" id="loadLastBtn">
+                            ⚡ Charger Dernière Session
+                        </button>
+                        <button class="btn btn-warning btn-uniform" onclick="addFoldersToSession()" id="addFoldersBtn" disabled>
+                            ➕ Ajouter dossiers
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+  
+            <!-- Actions thématiques organisées -->
+            <div class="actions-grid">
+                <!-- Groupe 1: Gestion Session -->
+                <div class="action-group session-group">
+                    <div class="group-header">💾 Session</div>
+                    <div class="group-buttons">
+                        <div id="sessionStatus" class="session-status session-none">
+                            📂 Aucune session chargée
+                        </div>
+                        <div id="sessionDetails" style="display: none;">
+                            <small id="sessionName"></small>
+                            <small id="sessionStats"></small>
+                        </div>
+                        <button class="btn btn-secondary btn-sm" onclick="toggleSessionsPanel()" id="toggleSessionsBtn">
+                            📋 Sessions
+                        </button>
+                        <button class="btn btn-info btn-sm" onclick="showSaveSessionModal()" id="saveSessionBtn" disabled>
+                            💾 Sauver Sous...
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Groupe 2: Exports & Génération -->
+                <div class="action-group exports-group">
+                    <div class="group-header">📤 Exports</div>
+                    <div class="group-buttons">
+                        <button class="btn btn-info btn-sm" onclick="generateHTMLLinks()" id="generateLinksBtn" disabled>
+                            🔗 Générer HTML
+                        </button>
+                        <button class="btn btn-info btn-sm" onclick="generateMarkdown()" id="generateMdBtn" disabled>
+                            📝 Export Markdown
+                        </button>
+                        <button class="btn btn-primary btn-sm" onclick="importSessionFromFile()">
+                            📥 Import Fichier
+                        </button>
+                        <button class="btn btn-primary btn-sm" onclick="exportSessionToFile()" id="exportFileBtn" disabled>
+                            📤 Export Fichier
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+
+            <!-- Bouton pour masquer/afficher les statistiques -->
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
+                <button class="btn btn-secondary btn-sm" onclick="toggleStatsVisibility()" id="toggleStatsBtn" title="Masquer/Afficher les statistiques (Ctrl+H)">
+                    <span id="toggleStatsIcon">👁️</span> <span id="toggleStatsText">Masquer stats</span>
+                </button>
+            </div>
+
+            <div class="progress-summary" id="progressSummary">
+                <div class="progress-container" id="progressContainer">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-text" id="progressText">Initialisation...</div>
+                </div>
+
+                <div class="stats" id="stats" style="display: none;">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalVideos">0</div>
+                        <div class="stat-label">Vidéos trouvées</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalSize">0 MB</div>
+                        <div class="stat-label">Taille totale</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalExtensions">0</div>
+                        <div class="stat-label">Extensions</div>
+                    </div>
+                </div>
+            </div>
+
+
+        <!-- Panneau des sessions -->
+        <div class="sessions-panel" id="sessionsPanel">
+            <div class="sessions-header">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3>📚 Sessions sauvegardées</h3>
+                    <button class="btn btn-secondary btn-sm" onclick="toggleSessionsPanel()">❌ Fermer</button>
+                </div>
+            </div>
+            <div id="sessionsList"></div>
+        </div>
+
+            <!-- Section des vidéos -->
+            <div class="videos-section" id="videosSection" style="display: none;">
+                <div class="videos-header" style="display: flex; justify-content: space-between; align-items: center; margin: 20px 0 15px 0;">
+                    <h3 style="color: #2c3e50; margin: 0;">📹 Vidéos trouvées</h3>
+                    <button class="btn btn-secondary btn-sm" onclick="toggleVideosVisibility()" id="toggleVideosBtn">
+                        👁️ Masquer
+                    </button>
+                </div>
+                <!-- Barre de recherche pour les vidéos -->
+                <div style="margin-bottom: 15px; position: relative;">
+                    <input type="text" id="videoSearchBox" placeholder="🔍 Rechercher dans les vidéos (nom, extension, dossier...)" style="width: 100%; padding: 10px 100px 10px 15px; border: 2px solid #e9ecef; border-radius: 25px; font-size: 14px; transition: all 0.3s;" onkeyup="filterVideos()" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'" onblur="if(!this.value){ this.style.borderColor='#e9ecef'; this.style.boxShadow='none'; }">
+                    <div style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: 10px;">
+                        <span id="searchResultCount" style="color: #28a745; font-size: 13px; font-weight: 600; display: none;"></span>
+                        <span style="color: #6c757d; font-size: 12px;">Ctrl+F</span>
+                    </div>
+                </div>
+                <div class="videos-container" id="videosContainer" style="max-height: 400px; overflow: auto; border: 1px solid #e9ecef; border-radius: 10px; background: white;">
+                    <table id="videosTable" style="width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed;">
+                        <colgroup>
+                            <col style="width: 35%; min-width: 200px;">
+                            <col style="width: 15%; min-width: 80px;">
+                            <col style="width: 10%; min-width: 50px;">
+                            <col style="width: 25%; min-width: 150px;">
+                            <col style="width: 15%; min-width: 100px;">
+                        </colgroup>
+                        <thead>
+                            <tr style="background: #f8f9fa; border-bottom: 2px solid #e9ecef; position: sticky; top: 0; z-index: 10;">
+                                <th style="padding: 10px; text-align: left; font-weight: 600; color: #495057; cursor: pointer; user-select: none; position: relative;" onclick="sortTable('name')" data-sort="none">
+                                    Nom <span class="sort-indicator" style="position: absolute; right: 20px;">↕</span>
+                                </th>
+                                <th style="padding: 10px; text-align: right; font-weight: 600; color: #495057; cursor: pointer; user-select: none; position: relative;" onclick="sortTable('size')" data-sort="none">
+                                    Taille <span class="sort-indicator" style="position: absolute; right: 20px;">↕</span>
+                                </th>
+                                <th style="padding: 10px; text-align: center; font-weight: 600; color: #495057; cursor: pointer; user-select: none;" onclick="sortTable('extension')" data-sort="none">
+                                    Ext. <span class="sort-indicator">↕</span>
+                                </th>
+                                <th style="padding: 10px; text-align: left; font-weight: 600; color: #495057; cursor: pointer; user-select: none; position: relative;" onclick="sortTable('folder')" data-sort="none">
+                                    Dossier <span class="sort-indicator" style="position: absolute; right: 20px;">↕</span>
+                                </th>
+                                <th style="padding: 10px; text-align: center; font-weight: 600; color: #495057;">
+                                    Actions
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="videosTableBody">
+                            <!-- Les vidéos seront insérées ici -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+
+    <!-- Modal pour sauvegarder session -->
+    <div class="modal" id="saveSessionModal">
+        <div class="modal-content" tabindex="-1">
+            <h3>💾 Sauvegarder la session</h3>
+            <p>Entrez un nom pour cette session :</p>
+            <div class="form-group">
+                <input type="text" id="sessionNameInput" placeholder="Nom de la session">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-success" onclick="confirmSaveSession()">💾 Sauvegarder</button>
+                <button class="btn btn-secondary" onclick="closeSaveSessionModal()">❌ Annuler</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmation de suppression -->
+    <div class="modal" id="deleteSessionModal">
+        <div class="modal-content">
+            <h3>🗑️ Supprimer la session</h3>
+            <p>Êtes-vous sûr de vouloir supprimer la session "<span id="deleteSessionName"></span>" ?</p>
+            <p><strong>Cette action est irréversible.</strong></p>
+            <div class="modal-actions">
+                <button class="btn btn-danger" onclick="confirmDeleteSession()">🗑️ Supprimer</button>
+                <button class="btn btn-secondary" onclick="closeDeleteModal()">❌ Annuler</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal de résumé d'ajout -->
+    <div class="modal" id="addSummaryModal">
+        <div class="modal-content" style="max-width: 600px;">
+            <h3>✅ Session mise à jour avec succès !</h3>
+            <div id="addSummaryContent" style="text-align: left; margin: 20px 0;">
+                <!-- Le contenu sera inséré dynamiquement -->
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="closeAddSummaryModal()">👍 OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmation pour nouveau scan -->
+    <div class="modal" id="newScanModal">
+        <div class="modal-content">
+            <h3>⚠️ Confirmation - Nouveau Scan</h3>
+            <p><strong>Attention :</strong> Cette action va effacer complètement la session actuelle et toutes les vidéos chargées.</p>
+            <p>Voulez-vous vraiment continuer et commencer un nouveau scan ?</p>
+            <div class="alert alert-info">
+                💡 <strong>Conseil :</strong> Pensez à sauvegarder votre session actuelle si vous souhaitez la conserver.
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-danger" onclick="proceedWithNewScan()">📁 Oui, nouveau scan</button>
+                <button class="btn btn-secondary" onclick="closeNewScanModal()">❌ Annuler</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmation générique -->
+    <div class="modal" id="confirmModal">
+        <div class="modal-content">
+            <h3 id="confirmModalTitle">Confirmation</h3>
+            <p id="confirmModalText"></p>
+            <div class="modal-actions">
+                <button class="btn btn-primary" id="confirmModalYes">Oui</button>
+                <button class="btn btn-secondary" id="confirmModalNo">Non</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Version discrète -->
+    <div class="version-info" id="versionInfo">v2.1.1</div>
+
+    <script src="renderer-sessions.js"></script>
+
+    <!-- Améliorations visuelles sans casser les fonctionnalités -->
+    <link rel="stylesheet" href="visual-design-improvements.css">
+</body>
+</html>
