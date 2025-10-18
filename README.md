@@ -17,36 +17,38 @@ Application desktop Electron pour gérer, cataloguer et exporter vos collections
 - ⚡ **Performance optimisée** : Gestion rapide de milliers de fichiers
 - 🎨 **Design moderne** : Interface gradient avec animations fluides
 
-## 📥 Installation
+## 🚀 Installation rapide
 
-### Windows
+### Pour les développeurs
 
-1. **Télécharger** la dernière version depuis [Releases](https://github.com/gizmo38/video-catalog-public/releases)
-   - ⚠️ Téléchargez le fichier `Video-Catalog-vX.X.X-Windows-Portable.zip` (le gros fichier ~120 MB)
-   - **PAS** les fichiers "Source code" (pour développeurs uniquement)
-2. **Extraire** le fichier ZIP dans un dossier de votre choix
-3. **Lancer** `Video Catalog.exe`
+```bash
+# Cloner et installer
+git clone https://github.com/gizmo38/video-catalog-electron.git
+cd video-catalog-electron
+npm install
 
-C'est tout ! Aucune installation requise.
+# Lancer l'application
+npm start
+```
 
-### ⚠️ Avertissement Windows SmartScreen
+**Prérequis** : [Node.js 16+](https://nodejs.org/) uniquement
 
-**Au premier lancement**, Windows affichera probablement :
+### Pour les utilisateurs
+
+Téléchargez la version portable depuis le [repository public](https://github.com/gizmo38/video-catalog-public/releases) - aucune installation requise !
+
+#### ⚠️ Avertissement Windows SmartScreen
+
+Au premier lancement, Windows peut afficher :
 > **"Windows a protégé votre ordinateur"**
 
-**C'est normal !** Voici pourquoi :
-- L'application n'est pas signée numériquement (certificat ~400€/an)
-- Windows protège contre les applications d'éditeurs inconnus
-- **Ce n'est PAS un virus** - Code source disponible publiquement
+**C'est normal !** L'application n'est pas signée numériquement (certificat coûteux).
 
 **Comment lancer l'application :**
+1. Cliquez sur **"Informations complémentaires"**
+2. Cliquez sur **"Exécuter quand même"**
 
-1. Cliquez sur **"Informations complémentaires"** (ou "More info")
-2. Cliquez sur **"Exécuter quand même"** (ou "Run anyway")
-
-**Alternative** : Clic droit sur `Video Catalog.exe` → Propriétés → Cocher "Débloquer" → OK
-
-✅ **L'application est sûre** - Vous pouvez vérifier le code source sur ce repository.
+✅ L'application est **sûre** et ne contient aucun virus. Code source disponible publiquement.
 
 ## 💡 Utilisation
 

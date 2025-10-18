@@ -1,6 +1,6 @@
 {
   "name": "video-catalog-electron",
-  "version": "2.1.4",
+  "version": "2.1.5",
   "description": "Application desktop pour générer un catalogue HTML de vidéos avec tableau élargi et actions multiples",
   "main": "main.js",
   "scripts": {
