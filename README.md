@@ -1,108 +1,106 @@
-# 📹 Video Catalog
+# 🎬 Video Catalog Electron
 
-> Application desktop pour cataloguer et gérer vos collections de vidéos
+Application desktop Electron pour gérer, cataloguer et exporter vos collections vidéo avec système de sessions intelligent.
 
-![Version](https://img.shields.io/badge/version-2.1.4-blue)
-![Platform](https://img.shields.io/badge/platform-Windows-lightgrey)
-![License](https://img.shields.io/badge/license-MIT-green)
+![Version](https://img.shields.io/badge/version-2.1.4-blue.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
+![Electron](https://img.shields.io/badge/electron-38.1.2-blue.svg)
 
-## ✨ Fonctionnalités
+> 📦 **Version publique disponible** : [video-catalog-public](https://github.com/gizmo38/video-catalog-public) - Téléchargez l'exécutable Windows depuis les [Releases](https://github.com/gizmo38/video-catalog-public/releases)
 
-### 🔍 Scan Automatique
-- Scannez un ou plusieurs dossiers en quelques clics
-- Détection automatique de tous les formats vidéo populaires
-- Extraction des métadonnées (nom, taille, extension, dossier)
+## ✨ Fonctionnalités principales
 
-### 💾 Sessions Sauvegardables
-- Sauvegardez vos scans dans des sessions nommées
-- Rechargez vos catalogues instantanément
-- Mise à jour incrémentale pour détecter les nouveaux fichiers
-- Vérification automatique des doublons de noms
+- 💾 **Sessions intelligentes** : Sauvegardez et chargez vos catalogues instantanément
+- 🔍 **Scan récursif** : Détection automatique de tous formats vidéo
+- 📊 **Interface moderne** : Tableau interactif avec tri, recherche et colonnes redimensionnables
+- 📤 **Export multiple** : HTML interactif, Markdown, JSON
+- ⚡ **Performance optimisée** : Gestion rapide de milliers de fichiers
+- 🎨 **Design moderne** : Interface gradient avec animations fluides
 
-### 📊 Interface Moderne
-- Tableau interactif avec tri multi-colonnes
-- Recherche en temps réel (Ctrl+F)
-- Colonnes redimensionnables
-- Statistiques masquables (Ctrl+H)
-- Design épuré avec animations fluides
+## 🚀 Installation rapide
 
-### ⚡ Actions Rapides
-- Ouvrir la vidéo avec le lecteur par défaut
-- Explorer le dossier contenant la vidéo
-- Copier le chemin dans le presse-papiers
-- Exporter en HTML ou Markdown
+```bash
+# Cloner et installer
+git clone https://github.com/gizmo38/video-catalog-electron.git
+cd video-catalog-electron
+npm install
 
-## 📥 Installation
+# Lancer l'application
+npm start
+```
 
-### Windows
+**Prérequis** : [Node.js 16+](https://nodejs.org/) uniquement
 
-1. **Télécharger** la dernière version depuis [Releases](https://github.com/gizmo38/video-catalog-public/releases)
-2. **Extraire** le fichier ZIP
-3. **Lancer** `Video Catalog.exe`
+## 💡 Utilisation
 
-C'est tout ! Aucune installation requise.
+### Démarrage rapide
+1. **📁 Nouveau Scan** → Sélectionner dossiers vidéo
+2. **💾 Sauver Session** → Nommer votre catalogue
+3. **⚡ Charger Session** → Accès instantané à vos vidéos
 
-### Version Portable
+### Fonctionnalités clés
+- **Ctrl+F** : Recherche instantanée
+- **Clic en-tête** : Trier colonnes
+- **Glisser bordure** : Redimensionner colonnes
+- **Actions vidéo** : Ouvrir, Explorer dossier, Copier chemin
 
-L'application fonctionne depuis n'importe quel emplacement :
-- ✅ Disque dur
-- ✅ Clé USB
-- ✅ Disque externe
+## 🎯 Formats supportés
 
-Les sessions sont sauvegardées localement dans le dossier `sessions/`.
+MP4 • AVI • MKV • MOV • WMV • FLV • M4V • WebM • OGV
 
-## 🚀 Utilisation
+## 📚 Documentation
 
-### 1. Scanner vos vidéos
+- 📖 **[CLAUDE.md](CLAUDE.md)** - Documentation technique complète
+  - Architecture détaillée
+  - Guide d'installation avancé
+  - Changelog complet v2.1.4
+  - Patterns et conventions
+  - Référence pour développeurs
+  - Workflow de publication
 
-1. Cliquez sur **"📁 Sélectionner dossiers"**
-2. Choisissez un ou plusieurs dossiers contenant vos vidéos
-3. Cliquez sur **"🔍 Scanner"**
-4. Attendez la fin du scan
+- 🌐 **[Repository Public](https://github.com/gizmo38/video-catalog-public)** - Distribution end-user
+  - Exécutables Windows portables
+  - README orienté utilisateurs
+  - Releases stables uniquement
 
-### 2. Sauvegarder une session
+## 🛠️ Scripts disponibles
 
-1. Après le scan, cliquez sur **"💾 Sauver Session"**
-2. Entrez un nom descriptif (ex: "Collection Disney", "Films Action")
-3. Confirmez
+```bash
+npm start          # Lancer l'application
+npm run dev        # Mode développement (DevTools)
+npm run build      # Créer l'exécutable portable
+npx playwright test # Tests automatisés
+```
 
-### 3. Charger une session
+## 🏗️ Stack technique
 
-1. Dans le panneau **"Sessions sauvegardées"**, cliquez sur une session
-2. Vos vidéos sont rechargées instantanément
+- **Electron 38.1.2** - Framework desktop
+- **Node.js natif** - Extraction métadonnées
+- **HTML/CSS/JS** - Interface moderne
+- **Playwright** - Tests E2E
 
-### 4. Exporter vos catalogues
+## 🤝 Contribution
 
-- **Générer HTML** : Catalogue web consultable dans un navigateur
-- **Export Markdown** : Format texte pour documentation
+Les contributions sont les bienvenues !
 
-## 🎯 Raccourcis Clavier
+1. Fork le projet
+2. Créer une branche feature (`git checkout -b feature/AmazingFeature`)
+3. Commit les changements (`git commit -m 'Add AmazingFeature'`)
+4. Push vers la branche (`git push origin feature/AmazingFeature`)
+5. Ouvrir une Pull Request
 
-| Raccourci | Action |
-|-----------|--------|
-| `Ctrl + F` | Recherche rapide |
-| `Ctrl + H` | Masquer/Afficher statistiques |
-| `Échap` | Fermer les modales |
+## 📝 Licence
 
-## 🎨 Formats Vidéo Supportés
-
-`.mp4` `.avi` `.mkv` `.mov` `.wmv` `.flv` `.m4v` `.webm` `.ogv`
-
-## 📋 Prérequis
-
-- **OS** : Windows 10/11 (64-bit)
-- **RAM** : 4 GB minimum
-- **Espace disque** : 300 MB
+MIT License - voir [LICENSE](LICENSE)
 
 ## 🆘 Support
 
-**Problèmes ou questions ?**
-Ouvrez une [issue sur GitHub](https://github.com/gizmo38/video-catalog-public/issues)
-
-## 📄 Licence
-
-MIT License - Voir [LICENSE](LICENSE) pour plus de détails.
+- 📖 **Documentation technique** : [CLAUDE.md](CLAUDE.md)
+- 🐛 **Issues** : [GitHub Issues](https://github.com/gizmo38/video-catalog-electron/issues)
+- 💡 **Discussions** : [GitHub Discussions](https://github.com/gizmo38/video-catalog-electron/discussions)
 
 ---
 
-**Développé avec ❤️ par [Video Catalog Team](https://github.com/gizmo38)**
+<div align="center">
+  <strong>Créé avec ❤️ pour simplifier la gestion de vos collections vidéo</strong>
+</div>
